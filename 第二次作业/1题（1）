@@ -1,0 +1,16 @@
+#include<stdio.h>
+int main(){
+        int y,f;
+        printf("请输入一个年份；");
+        scanf("%d",&y);
+        if(y%400==0){
+                f=29;
+        }else{
+        if(y%4==0){
+                if(y%100==0){f=28;}
+                else{f=29;}
+        }else{f=28;}
+        }
+        printf("%d年每个月的天数分别为31 %d 31 30 31 30 31 31 30 31 30 31",y,f);
+        return 0;
+}
