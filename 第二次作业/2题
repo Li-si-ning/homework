@@ -1,0 +1,18 @@
+#include<stdio.h>
+ int main(){
+         int a,b,c;
+         int min;
+        printf("请输入三个整数，用空格隔开：");
+         scanf("%d %d %d",&a,&b,&c);
+         if(a<b){
+         min=a;
+         }else{
+         min=b;
+         }
+         if(c<min){
+         min=c;
+         }
+         printf("三个整数中的最小值是:%d\n",min);
+
+         return 0;
+         }
