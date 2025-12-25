@@ -1,0 +1,142 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+void printqipan(char qipan[][15])
+{
+    int i,j;
+    printf("   ");
+    for(i=0;i<15;i++)
+    {
+        printf("%2d",i);
+    }
+    printf("\n");
+
+    for(i=0;i<15;i++)
+    {  
+        printf("%2d ",i);
+        for(j=0;j<15;j++)
+        {
+            printf("%2c",qipan[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+/*判断输赢，0-未分，1-已分*/
+int checkwin(char qipan[][15],int size,char player)
+{
+    int i,j,k;
+    int count=0;
+
+    //判断行
+    for(i=0;i<size;i++)
+    {
+        count=0;
+        for(j=0;j<size;j++)
+        {
+            if(qipan[i][j]==player)
+            {
+                count++;
+                if(count==5)return 1;
+            }else{
+                count=0;
+            }
+        }
+    }
+
+    //判断列
+    for(i=0;i<size;i++)
+    {
+        count=0;
+        for(j=0;j<size;j++)
+        {
+            if(qipan[j][i]==player)
+            {
+                count++;
+                if(count==5)return 1;
+            }else count=0;
+        }
+    }
+
+    //判断右斜
+    for(i=0;i<=size-5;i++)
+    {
+        for(j=0;j<=size-5;j++)
+        {
+            count=0;
+            for(k=0;k<5;k++)
+            {
+                if(qipan[i+k][j+k]==player)
+                {
+                    count++;
+                    if(count==5)return 1;
+                }else{
+                    break;
+                }
+            }
+        }
+    }
+
+    //判断左斜
+    for(i=size-1;i>=size-5;i--)
+    {
+        for(j=0;j<=size-5;j++)
+        {
+            count=0;
+            for(k=0;k<5;k++)
+            {
+                if(qipan[i-k][j+k]==player)
+                {
+                    count++;
+                    if(count==5)return 1;
+                }else{
+                    break;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+int main()
+{
+    char qipan[15][15];
+    int i,j,win;
+    int row,len;
+    char player[2]={'X','O'};
+    int order=0;
+
+    //初始化棋盘
+    for(i=0;i<15;i++)
+    {
+        for(j=0;j<15;j++)
+        {
+            qipan[i][j]='+';
+        }
+    }
+
+    printqipan(qipan);
+    win=0;
+
+    while(win==0)
+    {
+        printf("请%c下棋，输入行 列，以空格隔开：",player[order]);
+        scanf("%d %d",&row,&len);
+        qipan[row][len]=player[order];
+        system("clear");
+        printqipan(qipan);
+        
+        win=checkwin(qipan,15,player[order]);
+        if(win==1)
+        {
+            printf("player%ciswiner",player[order]);
+            break;
+        }else{
+            order++;
+            order%=2;
+        }
+    }
+
+    return 0;
+}
