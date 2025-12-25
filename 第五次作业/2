@@ -1,0 +1,210 @@
+#include<stdio.h>
+#include<stdlib.h> 
+
+// 判断是否为闰年的函数
+int runnian(int year)
+{
+    if((year%4==0&&year%100!=0)||year%400==0)
+    {
+        return 1;  // 闰年返回1
+    }
+    else
+    {
+        return 0;  // 非闰年返回0
+    }
+}
+
+int main()
+{
+    // 已知基准日期（2025年11月12日，星期三）
+    int toyear=2025;
+    int tomonth=11;
+    int today=12;
+    int toweek=3;
+    
+    // 输入的年月（日固定为1，用于计算月首星期）
+    int year,month,day=1;
+    int week=0;          // 初始化星期变量，避免未定义行为
+    int total=0;         // 两个日期之间的天数差
+    int month_day[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
+    int rili[6][7]={     // 日历存储数组（6行7列，覆盖最多6周）
+        {0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0},
+        {0,0,0,0,0,0,0}
+    };
+    int i,j,k;  // 循环控制变量
+
+    // 输入年月
+    printf("请输入年月，并用空格隔开：");
+    scanf("%d %d",&year,&month);
+
+    // 输入合法性判断（月份1-12，日固定为1无需判断）
+    if(month<1||month>12)
+    {
+        printf("输入错误！月份范围应为1-12\n");
+        return 1;
+    }
+
+    // 计算输入年月的1日与基准日期的天数差
+    if(year>toyear)
+    {
+        // 1. 基准日期到当年年底的天数
+        total=month_day[tomonth]-today;
+        for(i=tomonth+1;i<=12;i++)
+        {
+            total+=month_day[i];
+        }
+        // 基准年是闰年且月份≤2时，补2月的额外1天
+        if(tomonth<=2)
+        {
+            total+=runnian(toyear);
+        }
+
+        // 2. 基准年下一年到输入年上一年的总天数
+        for(i=toyear+1;i<year;i++)
+        {
+            total+=365+runnian(i);
+        }
+
+        // 3. 输入年1月到输入月前一个月的天数
+        for(i=1;i<month;i++)
+        {
+            total+=month_day[i];
+        }
+        total+=day;  // 输入月1日的天数
+        // 输入年是闰年且月份>2时，补2月的额外1天
+        if(month>2)
+        {
+            total+=runnian(year);
+        }
+
+        // 计算输入月1日的星期（基准星期+天数差 取模7）
+        week=(total+toweek)%7;
+    }
+    else if(year<toyear)
+    {
+        // 1. 输入月1日到当年年底的天数
+        total=month_day[month]-day;
+        for(i=month+1;i<=12;i++)
+        {
+            total+=month_day[i];
+        }
+        // 输入年是闰年且月份≤2时，补2月的额外1天
+        if(month<=2)
+        {
+            total+=runnian(year);
+        }
+
+        // 2. 输入年下一年到基准年上一年的总天数
+        for(i=year+1;i<toyear;i++)
+        {
+            total+=365+runnian(i);
+        }
+
+        // 3. 基准年1月到基准月前一个月的天数
+        for(i=1;i<tomonth;i++)
+        {
+            total+=month_day[i];
+        }
+        total+=today;  // 基准日的天数
+        // 基准年是闰年且月份>2时，补2月的额外1天
+        if(tomonth>2)
+        {
+            total+=runnian(toyear);
+        }
+
+        // 计算输入月1日的星期（基准星期-天数差 取模7，避免负数）
+        week=(toweek-total%7+7)%7;
+    }
+    else  // year == toyear
+    {
+        if(month==tomonth)
+        {
+            // 同月：直接计算天数差
+            total=day-today;
+            week=(total+toweek)%7;
+        }
+        else if(month>tomonth)
+        {
+            // 输入月在基准月之后
+            total=month_day[tomonth]-today;
+            for(i=tomonth+1;i<month;i++)
+            {
+                total+=month_day[i];
+            }
+            total+=day;
+            // 基准年是闰年且跨2月时，补1天
+            if(tomonth<=2&&month>2)
+            {
+                total+=runnian(year);
+            }
+            week=(total+toweek)%7;
+        }
+        else  // month < tomonth
+        {
+            // 输入月在基准月之前
+            total=month_day[month]-day;
+            for(i=month+1;i<tomonth;i++)
+            {
+                total+=month_day[i];
+            }
+            total+=today;
+            // 基准年是闰年且跨2月时，补1天
+            if(month<=2&&tomonth>2)
+            {
+                total+=runnian(year);
+            }
+            // 调试输出天数差（可保留或删除）
+            printf("天数差：%d\n",total);
+            // 计算星期
+            week=(toweek-total%7+7)%7;
+        }
+    }
+
+    // 填充日历数组（考虑闰年2月天数）
+    if(month==2)
+    {
+        month_day[2]+=runnian(year);
+    }
+    j=0;  // 日历行索引
+    for(i=1;i<=month_day[month];i++)
+    {
+        rili[j][week]=i;
+        week++;
+        if(week>6)
+        {
+            week=0;
+            j++;
+        }
+    }
+
+    // 输出日历
+    printf("\n%d年%d月的日历：\n",year,month);
+    printf("日  一  二  三  四  五  六\n");
+    for(i=0;i<6;i++)
+    {
+        for(j=0;j<7;j++)
+        {
+            if(rili[i][j]==0)
+            {
+                printf("    ");  // 空日期用空格填充
+            }
+            else
+            {
+                printf("%-4d",rili[i][j]);  // 左对齐输出日期
+            }
+        }
+        printf("\n");
+    }
+
+    // 恢复2月天数（避免影响后续逻辑，若有）
+    if(month==2)
+    {
+        month_day[2]=28;
+    }
+
+    return 0;
+}
