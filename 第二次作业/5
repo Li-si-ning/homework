@@ -1,0 +1,14 @@
+#include<stdio.h>
+int main(){
+        int n;
+        int sum=0;
+        printf("请输入一个正整数n：");
+        scanf("%d",&n);
+        for(int i=1;i<=n;i+=2){
+                sum+=i;
+        }
+
+        printf("1到%d之间所有奇数的和为：%d\n",n,sum);
+
+        return 0;
+}
