@@ -1,0 +1,19 @@
+#include<stdio.h>
+int main(){
+        int a=0,b=1;
+        int *p=NULL;
+        p=&a;
+        printf("请输入a的值；");
+        scanf("%d",&a);
+        printf("（2）的输出结果为；");
+        printf("a的值为；%d\n",a);
+        printf("a的地址为；%p\n",(void*)&a);
+        printf("p的值为；%p\n",(void*)p);
+        printf("*p的值为：%d\n",*p);
+        p=&b;
+        *p=*p+10;
+        printf("（4）的输出结果为；");
+        printf("修改后b值为:%d\n",b);
+        
+        return 0;
+}   
