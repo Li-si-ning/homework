@@ -1,0 +1,51 @@
+#include<stdio.h>
+#include<stdlib.h>
+typedef struct list_item{
+    int data;
+    struct list_item *next;
+}list_item;
+
+void erase_list(list_item *head){
+    list_item *current=head;
+    list_item *next_node=NULL;
+while(current!=NULL){
+    next_node=current->next;
+    free(current);
+    current=next_node;
+  }
+}
+list_item* create_node(int data){
+    list_item *new_node=(list_item *)malloc(sizeof(list_item));
+    if (new_node == NULL) {
+    printf("内存分配失败！\n");
+    exit(1);
+}
+  new_node->data = data;
+  new_node->next = NULL;
+  return new_node;
+}
+
+void print_list(list_item *head) {
+    list_item *current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->data);
+ current = current->next;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+
+    list_item *head = create_node(1);
+    head->next = create_node(2);
+    head->next->next = create_node(3);
+
+    printf("链表内容: ");
+    print_list(head);
+
+    erase_list(head);
+
+    printf("链表已释放。\n");
+
+    return 0;
+}
