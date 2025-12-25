@@ -1,0 +1,185 @@
+#include <stdio.h>
+int runnian(int year)//判断是不是闰年的函数
+{
+    if((year%4==0&&year%100!=0)||year%400==0)//是闰年
+        {
+            return 1;//闰年返回1
+        }
+        else
+        {
+            return 0;//不是闰年返回0
+        }
+}
+
+void printweek(int week)
+{
+    switch (week)
+        {
+      case 0:
+         printf("星期日\n");
+         break;
+                case 1:
+         printf("星期一\n");
+         break;
+      case 2:
+         printf("星期二\n");
+         break;
+      case 3:
+         printf("星期三\n");
+         break;
+      case 4:
+         printf("星期四\n");
+         break;
+      case 5:
+         printf("星期五\n");
+         break;
+      case 6:
+         printf("星期六\n");
+         break;
+   }
+}
+
+int main()
+{
+        int toyear=2025;
+        int tomonth=11;
+        int today=12;
+        int toweek=3;
+        int year,month,day;//用于接收输入的年月日
+        int week=0;
+        int total=0;//两个日期之间的天数
+        int month_day[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};//一年中每月的天数，2月按28天计，遇闰年+1
+        int i,j,k;//用于循环的控制变量
+
+        printf("请分输入年 月 日，并用空格隔开；");
+   scanf("%d %d %d",&year,&month,&day);
+
+        /*判断输入的day是否合法的代码*/
+    if(day>month_day[month]||month<0||month>12)
+{
+                printf("输入错误！");
+                return 1;
+         }
+
+    if(year>toyear)//当输入的年份>2025时
+        {   //1
+                total=month_day[tomonth]-today;//总天数算上已知日期当月的天数
+                for(i=tomonth+1;i<=12;i++)//总天数算上已知天数自下月开始到年底的天数
+                {
+                        total+=month_day[i];
+                }
+                if(tomonth<=2)//如果已知日期的月份小于等于2，需要判断已知年份是不是闰年
+                {
+                        total+=runnian(toyear);
+                }
+                //1结束，统计从已知日期起到年底有多少天
+                //2开始
+                for(i=toyear+1;i<year;i++)
+                {
+                        total+=365;
+                        total+=runnian(i);
+                }
+                //2结束，1+已知日期下一年到输入年份上一年的总天数
+                //3开始
+                for(i=1;i<month;i++)//统计输入日期当年该日期之前整月的天数
+                {
+total+=month_day[i];
+                }
+                total+=day;//输入日期当月的天数
+                if(month>2)//如果输入的日期是2月份之后的日期，则需要判断输入的年份是不是闰年
+                {
+                        total+=runnian(year);
+                }
+                //3结束，1+2+输入日期当年到该日期的天数
+                printf("%d\n",total);
+                week=(total+toweek)%7;
+        }
+        else
+        {
+                if(year<toyear)//当输入的年份<2025时,从输入的日期开始统计天数
+                {
+                        total=month_day[month]-day;//输入日期当月剩余天数
+                        for(i=month+1;i<=12;i++)
+                        {
+                                total+=month_day[i];
+                        }
+                        if(month<=2)//如果输入日期的月份小于等于2，需要判断输入年份是不是闰年
+                        {
+                                total+=runnian(year);
+                        }
+
+                        for(i=year+1;i<toyear;i++)
+                        {
+                                total+=365;
+                                total+=runnian(i);
+                        }
+
+                        for(i=1;i<tomonth;i++)
+                        {
+                                total+=month_day[i];
+                        }
+                        if(tomonth>2)
+                        {
+                                total+=runnian(toyear);
+                        }
+                        total+=today;
+                        week=7-(total-toweek)%7;
+
+                }
+                else//当输入的年份=2025时
+                {
+                        if(month==tomonth)//输入的日期是已知日期当月的日期
+                        {
+                                if(day>=today)
+                                {
+                                        total=day-today;
+                                        week=(total+toweek)%7;
+                                }
+                                else
+                                {
+                                        total=today-day;
+                                        week=(total-toweek)%7;
+                                        if(week<0)week=abs(week);
+                                        else week=7-week;
+                                }
+                        }
+                        else
+                        {
+                                if(month>tomonth)//输入月份大于已知月份
+                                {
+                                        total+=month_day[tomonth]-today;
+                                        for(i=tomonth+1;i<month;i++)
+                                        {
+                                                total+=month_day[i];
+                                        }
+                                        total+=day;
+                                        if(tomonth<=2&&month>2)
+                                        {
+                                                total+=runnian(year);
+                                        }
+                                        week=(total+toweek)%7;
+                                }
+                                else//输入日期小于已知日期的月份
+                                {
+                                        total+=month_day[month]-day;
+                                        for(i=month+1;i<tomonth;i++)
+                                        {
+                                                total+=month_day[i];
+                                        }
+                                        total+=today;
+                                 if(month<=2&&tomonth>2)
+                                        {
+                                                total+=runnian(year);
+                                        }
+                                        printf("%d\n",total);
+                                        week=7-(total-toweek)%7;
+                                }
+                        }
+                }
+        }
+
+        printf("%d年%d月%d日是",year,month,day);
+        printweek(week);
+
+        return 0;
+}
