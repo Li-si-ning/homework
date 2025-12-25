@@ -1,0 +1,28 @@
+#include<stdio.h>
+int main(){
+        int n,i,isPrime=1;
+        printf("输入一个正数：");
+        scanf("%d",&n);
+        if(n<=0){
+                printf("请输入一个正数：");
+        }else if(n==1){
+                isPrime=0;
+        }else if(n==2){
+                isPrime=1;
+        }else{
+        i=2;
+        while(i<=(n/2)){
+                if(n%i==0){
+                        isPrime=0;
+                        break;
+                }
+                i++;
+        }
+        }
+if(isPrime){
+        printf("yes");
+}else{
+        printf("no");
+}
+return 0;
+}
