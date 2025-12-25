@@ -1,0 +1,31 @@
+#include<stdio.h>
+int main(){
+        int x,i,j;
+        printf("请输入一个比较大的正数x：");
+        scanf("%d",&x);
+ if(x<=0){
+        printf("输入必须是正整数；\n");
+        return 1;
+ }
+ printf("所有素数如下；");
+
+for(i=2;i<=x;i++){
+int isPrime=1;
+        if(i==2){
+                printf("%d ",i);
+        continue;
+}if(i%2==0){
+        isPrime=0; 
+}else{       
+        for(j = 3; j * j <= i; j += 2) {
+                if (i % j == 0) {
+                    isPrime = 0;
+                    break;
+                }
+            }
+        }
+if(isPrime){
+        printf("%d ",i);
+}   
+}
+return 0;
