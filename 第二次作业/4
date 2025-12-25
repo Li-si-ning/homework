@@ -1,0 +1,11 @@
+#include<stdio.h>
+int main(){
+        int n;
+        int s;
+        printf("输入一个正整数：");
+                scanf("%d",&n);
+           s=(n*(n+1))/2;
+           printf("1到%d的和是:%d\n",n,s);
+
+                   return 0;
+}
