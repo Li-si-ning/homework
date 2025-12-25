@@ -1,0 +1,26 @@
+#include<stdio.h>
+int main(){
+    int row, stars, spaces, n; 
+    printf("输入一个正奇数：");
+    scanf("%d",&n);
+  
+     for(row = 1; row <= n/2 + 1; row++){
+        for(spaces = 1; spaces <= n/2 + 1 - row; spaces++){
+            printf(" ");
+        }
+        for(stars = 1; stars <= 2*row - 1; stars++){
+            printf("*");
+        }
+        printf("\n");
+    }
+    for(row = n/2; row >= 1; row--){
+        for(spaces = 1; spaces <= n/2 + 1 - row; spaces++){
+            printf(" ");
+        }
+        for(stars = 1; stars <= 2*row - 1; stars++){
+            printf("*");
+        }
+        printf("\n");
+    }
+    return 0;
+}
