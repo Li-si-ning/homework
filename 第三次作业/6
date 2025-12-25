@@ -1,0 +1,92 @@
+#include <stdio.h>
+void printarr(char arr[][6],int len,int high)
+{
+        int i,j;
+        for(i=0;i<high;i++)
+        {
+                for(j=0;j<len;j++)
+                {
+                        printf("%c",arr[i][j]);
+                }
+                printf("\n");
+        }
+}
+void asche(char arr[][6],int len,int high,int sum[])
+{
+        int i,j,t=0;
+        for(i=0;i<high;i++)
+        {
+                for(j=0;j<len;j++)
+                {
+                        sum[t]+=arr[i][j];
+                }
+                t++;
+        }
+}
+void xchange(char a1[],char a2[],int len)
+{
+        char c;
+        int t;
+ for(t=0;t<len;t++)
+        {
+ c=a1[t];
+                a1[t]=a2[t];
+                a2[t]=c;
+        }
+}
+void xuanzechar(char arr[],int len)
+{
+        int i,j;
+        char t;
+        for(i=0;i<len-1;i++)
+        {
+                for(j=i+1;j<len;j++)
+                {
+                        if(arr[i]>arr[j])
+                        {
+                                t=arr[i];
+                                arr[i]=arr[j];
+                                arr[j]=t;
+                        }
+                }
+        }
+                        }
+
+int main()
+{
+        char a[5][6]=
+                {
+     {'S','D','U','Y','E','S'},
+     {'C','H','I','N','A','!'},
+     {'A','F','T','e','R','X'},
+     {'h','e','r','o','a','b'},
+     {'C','y','y','D','S','!'}
+    };
+        int i,j,len,high,lenasc,t;
+        int asc[5];
+        len=sizeof(a[0])/sizeof(a[0][0]);
+        high=sizeof(a)/len;
+        printf("原数组是：\n");
+        printarr(a,len,high);
+        asche(a,len,high,asc);
+          for(i=0;i<high-1;i++)
+        {
+                for(j=i+1;j<high;j++)
+                {
+                        if(asc[i]>asc[j])
+                        {
+                                xchange(a[i],a[j],len);
+                                t=asc[i];
+                                asc[i]=asc[j];
+                                asc[j]=t;
+                        }
+                }
+        }
+        for(j=0;j<high;j++)
+ {
+                xuanzechar(a[j],len);
+        }
+        printf("排序之后的数组是：\n");
+        printarr(a,len,high);
+        return 0;
+}
