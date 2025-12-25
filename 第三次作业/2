@@ -1,0 +1,16 @@
+#include<stdio.h>
+int main(){
+        int count[10]={0},n,i;
+        printf("输入10个范围在0~9之间的整数，用空格隔开：\n");
+        for(i=0;i<10;i++){
+                scanf("%d",&n);
+        if(n>=0&&n<=9){
+                count[n]++;
+        }
+        }
+        printf("输出结果如下；\n");
+        for(i=0;i<10;i++){
+                printf("%d一共出现了%d次\n",i,count[i]);
+        }
+        return 0; 
+}       
