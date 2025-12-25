@@ -1,0 +1,208 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+
+#define BOARD_SIZE 15
+char board[BOARD_SIZE][BOARD_SIZE];//棋盘数组
+
+//初始化棋盘
+void initBoard()
+{
+    for(int i=0;i<BOARD_SIZE;i++)
+    {
+        for(int j=0;j<BOARD_SIZE;j++)
+        {
+            board[i][j]='+';//'+'表示空位
+        }
+    }
+}
+
+//打印棋盘（文本界面）
+void printBoard()
+{
+    printf("  ");
+    for(int j=0;j<BOARD_SIZE;j++)
+    {
+        printf("%2d",j+1);//列号（1-15）
+    }
+    printf("\n");
+    for(int i=0;i<BOARD_SIZE;i++)
+    {
+        printf("%2d",i+1);//行号（1-15）
+        for(int j=0;j<BOARD_SIZE;j++)
+        {
+            printf("%2c",board[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+//检查某一方向的连续棋子数
+int checkLine(int x,int y,int dx,int dy,char player)
+{
+    int count=0;
+    for(int i=1;i<=4;i++)
+    {
+        int nx=x+dx*i;
+        int ny=y+dy*i;
+        if(nx>=0&&nx<BOARD_SIZE&&ny>=0&&ny<BOARD_SIZE&&board[nx][ny]==player)
+        {
+            count++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return count;
+}
+
+//计算位置得分
+int calculateScore(int x,int y,char player)
+{
+    int score=0;
+    //横向
+    score+=checkLine(x,y,0,1,player);
+    score+=checkLine(x,y,0,-1,player);
+    //纵向
+    score+=checkLine(x,y,1,0,player);
+    score+=checkLine(x,y,-1,0,player);
+    //斜向（左上-右下）
+    score+=checkLine(x,y,1,1,player);
+    score+=checkLine(x,y,-1,-1,player);
+    //斜向（右上-左下）
+    score+=checkLine(x,y,1,-1,player);
+    score+=checkLine(x,y,-1,1,player);
+    return score;
+}
+
+//智能体落子（贪心算法）
+void aiMove()
+{
+    int bestX=0,bestY=0;
+    int maxScore=-1;
+    //遍历所有空位，找得分最高的位置
+    for(int x=0;x<BOARD_SIZE;x++)
+    {
+        for(int y=0;y<BOARD_SIZE;y++)
+        {
+            if(board[x][y]=='+')
+            {
+                int score=calculateScore(x,y,'O');//电脑用'O'
+                //优先堵对方的高分位置（比如玩家的活四）
+                int enemyScore=calculateScore(x,y,'X');
+                if(enemyScore>score)
+                {
+                    score=enemyScore;
+                }
+                if(score>maxScore)
+                {
+                    maxScore=score;
+                    bestX=x;
+                    bestY=y;
+                }
+            }
+        }
+    }
+    board[bestX][bestY]='O';
+    printf("电脑落子：(%d,%d)\n",bestX+1,bestY+1);
+}
+
+//玩家落子（输入处理）
+void playerMove()
+{
+    int x,y;
+    while(1)
+    {
+        printf("请输入落子坐标（x y，范围1-%d）：",BOARD_SIZE);
+        scanf("%d%d",&x,&y);
+        x--;y--;//转换为数组索引（0开始）
+        if(x>=0&&x<BOARD_SIZE&&y>=0&&y<BOARD_SIZE&&board[x][y]=='+')
+        {
+            board[x][y]='X';//玩家用'X'
+            break;
+        }
+        printf("输入无效，请重新输入！\n");
+    }
+}
+
+//判断胜负
+int checkWinner(char player)
+{
+    //横向检查
+    for(int i=0;i<BOARD_SIZE;i++)
+    {
+        for(int j=0;j<=BOARD_SIZE-5;j++)
+        {
+            if(board[i][j]==player&&board[i][j+1]==player&&board[i][j+2]==player&&board[i][j+3]==player&&board[i][j+4]==player)
+            {
+                return 1;
+            }
+        }
+    }
+    //纵向检查
+    for(int j=0;j<BOARD_SIZE;j++)
+    {
+        for(int i=0;i<=BOARD_SIZE-5;i++)
+        {
+            if(board[i][j]==player&&board[i+1][j]==player&&board[i+2][j]==player&&board[i+3][j]==player&&board[i+4][j]==player)
+            {
+                return 1;
+            }
+        }
+    }
+    //斜向（左上-右下）检查
+    for(int i=0;i<=BOARD_SIZE-5;i++)
+    {
+        for(int j=0;j<=BOARD_SIZE-5;j++)
+        {
+            if(board[i][j]==player&&board[i+1][j+1]==player&&board[i+2][j+2]==player&&board[i+3][j+3]==player&&board[i+4][j+4]==player)
+            {
+                return 1;
+            }
+        }
+    }
+    //斜向（右上-左下）检查
+    for(int i=0;i<=BOARD_SIZE-5;i++)
+    {
+        for(int j=4;j<BOARD_SIZE;j++)
+        {
+            if(board[i][j]==player&&board[i+1][j-1]==player&&board[i+2][j-2]==player&&board[i+3][j-3]==player&&board[i+4][j-4]==player)
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+//主函数（游戏流程控制）
+int main()
+{
+    srand(time(0));//初始化随机
+    initBoard();
+    printBoard();
+
+    while(1)
+    {
+        //玩家回合
+        playerMove();
+        printBoard();
+        if(checkWinner('X'))
+        {
+            printf("恭喜你获胜！\n");
+            break;
+        }
+
+        //电脑回合
+        aiMove();
+        printBoard();
+        if(checkWinner('O'))
+        {
+            printf("电脑获胜！\n");
+            break;
+        }
+    }
+
+    return 0;
+}
