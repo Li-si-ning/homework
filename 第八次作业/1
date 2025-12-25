@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <string.h>
+
+//打印座位图（行号列号从1开始显示）
+void printseat(char seat[][10]){
+    int i,j;
+    
+    //打印列号（1-10）
+    printf("  ");
+    for(i=1;i<=10;i++){
+        printf("%2d",i);
+    }
+    printf("\n");
+
+    //打印行号（1-10）+座位状态
+    for(i=1;i<=10;i++){
+        printf("%2d",i);
+        for(j=1;j<=10;j++){
+            printf("%2c",seat[i-1][j-1]);//数组索引从0开始，需转换
+        }
+        printf("\n");
+    }
+}
+
+
+int main(){
+    char seat[10][10];//10x10座位数组（0:空座'+',1:已占'X'）
+    FILE *fp;//文件指针（用于保存/恢复座位状态）
+    int i,j;
+
+    //读取历史座位状态
+    fp=fopen("seats.dat","rb");
+    if(fp!=NULL){
+        fread(seat,sizeof(char),10*10,fp);//读取100个字符（10x10）
+        fclose(fp);
+        printf("已恢复上次的座位状态！\n");
+    }else{
+        //文件不存在时初始化所有座位为'+'（空座）
+        for(i=0;i<10;i++){
+            for(j=0;j<10;j++){
+                seat[i][j]='+';
+            }
+        }
+        printf("首次运行，初始化座位成功！\n");
+    }
+
+    //打印初始座位图
+    printf("\n--座位表如下--\n");
+    printseat(seat);
+
+    //选择购票数量
+    int num;
+    printf("\n您选择几张电影票：");
+    scanf("%d",&num);
+
+    //选座逻辑
+    int hang,lie;//所选座位的行、列（用户输入1-10）
+    int price=0;//总票价（单价35元）
+    int count=0;//已选成功的座位数
+
+    while(count<num){
+        printf("\n请选择第%d张票的座位（先行后列，空格分隔）：",count+1);
+        scanf("%d %d",&hang,&lie);
+
+        //1.校验行/列是否合法（1-10）
+        if(hang<1||hang>10||lie<1||lie>10){
+            printf("输入错误！行/列需在1-10之间，请重新输入。\n");
+            continue;
+        }
+
+        //2.校验座位是否为空
+        if(seat[hang-1][lie-1]=='+'){
+            seat[hang-1][lie-1]='X';//标记为已占
+            count++;
+            price+=35;
+
+            //打印选座成功
+            printf("选座成功！当前已选%d张，累计票价：%d元\n",count,price);
+            printf("\n--更新后的座位表--\n");
+            printseat(seat);
+        }else{
+            printf("座位[%d行%d列]已被占用，请重新选择！\n",hang,lie);
+        }
+    }
+
+    //购票完成
+    printf("\n===购票成功===");
+    printf("\n共购买%d张票，总金额：%d元\n",num,price);
+
+    //保存座位状态到文件
+    fp=fopen("seats.dat","wb");
+    if(fp!=NULL){
+        fwrite(seat,sizeof(char),10*10,fp);
+        fclose(fp);
+        printf("座位状态已保存，下次启动将自动恢复～\n");
+    }else{
+        printf("警告：无法保存座位状态（文件打开失败）！\n");
+    }
+
+    return 0;
+}
