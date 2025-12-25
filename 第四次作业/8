@@ -1,0 +1,23 @@
+#ifndef MODULE_H 
+#define MODULE_H
+
+int function1();
+int function2();
+
+extern int global_var;
+
+#endif 
+#include <stdio.h>
+#include "module.h"
+
+int main() {
+    int result1 = function1();
+    printf("function1 返回值：%d\n", result1);
+    
+    int result2 = function2();
+    printf("function2 返回值：%d\n", result2);
+    
+    printf("全局变量 global_var 的值：%d\n", global_var);
+    
+    return 0;
+}
