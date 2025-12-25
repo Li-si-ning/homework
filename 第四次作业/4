@@ -1,0 +1,17 @@
+#include<stdio.h>
+int my_strlen(char *str){
+  int length=0;
+    while(str[length]!='\0'){
+      length++;
+  }
+    return length;
+}
+int main(){
+  char str[10000];
+  printf("请输入一个字符串；");
+  scanf("%s",str);
+  
+  int len=my_strlen(str);
+  printf("字符串的长度是；%d\n",len);
+  return 0;
+}    
