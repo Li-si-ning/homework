@@ -1,0 +1,249 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <termios.h>
+#include <time.h>
+
+// 地图尺寸
+#define MAP_WIDTH 20
+#define MAP_HEIGHT 10
+
+// 方向定义
+#define DIR_UP 1
+#define DIR_DOWN 2
+#define DIR_LEFT 3
+#define DIR_RIGHT 4
+
+// 蛇身节点（链表结构）
+typedef struct SnakeNode {
+    int x;                  // 节点横坐标
+    int y;                  // 节点纵坐标
+    struct SnakeNode *next; // 指向下一节点
+} SnakeNode;
+
+SnakeNode *snakeHead = NULL;  // 蛇头指针
+int foodX, foodY;             // 食物坐标
+int direction = DIR_RIGHT;    // 当前移动方向
+int gameOver = 0;             // 游戏结束标志
+struct termios originalTerm;  // 原始终端属性
+
+// 函数声明
+void initTerminal();          // 初始化终端模式
+void restoreTerminal();       // 恢复终端模式
+void initSnake();             // 初始化蛇
+void generateFood();          // 生成食物
+void drawGameMap();           // 绘制游戏地图
+void handleUserInput();       // 处理用户输入
+int checkCollision();         // 碰撞检测
+void moveSnake();             // 移动蛇身
+void freeSnakeMemory();       // 释放蛇身内存
+
+int main() {
+    initTerminal();           // 配置终端为非规范模式
+    initSnake();              // 初始化蛇（长度3）
+    generateFood();           // 生成初始食物
+
+    while (!gameOver) {
+        drawGameMap();       
+        handleUserInput();    
+        if (checkCollision()) { gameOver = 1; break; }
+        moveSnake();         
+        usleep(200000);      
+        system("clear");     
+    }
+
+    system("clear");
+    printf("游戏结束！\n");
+    freeSnakeMemory();       
+    restoreTerminal();      
+    return 0;
+}
+//使用ai程序初始化终端
+// 初始化终端：关闭规范模式和回显，实现实时输入
+void initTerminal() {
+    struct termios newTerm;
+    tcgetattr(STDIN_FILENO, &originalTerm);  // 保存原始终端属性
+    newTerm = originalTerm;
+    newTerm.c_lflag &= ~(ICANON | ECHO);     // 关闭规范模式和回显
+    newTerm.c_cc[VMIN] = 1;                  // 至少读取1个字符
+    newTerm.c_cc[VTIME] = 0;                 // 无超时等待
+    tcsetattr(STDIN_FILENO, TCSANOW, &newTerm); // 立即应用新设置
+}
+
+// 恢复终端原始模式
+void restoreTerminal() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &originalTerm);
+}
+
+// 初始化蛇：生成3个节点，初始方向向右
+void initSnake() {
+    // 蛇头节点
+    snakeHead = (SnakeNode*)malloc(sizeof(SnakeNode));
+    snakeHead->x = MAP_WIDTH / 2;
+    snakeHead->y = MAP_HEIGHT / 2;
+    snakeHead->next = NULL;
+
+    // 第二个节点（蛇颈）
+    SnakeNode *secondNode = (SnakeNode*)malloc(sizeof(SnakeNode));
+    secondNode->x = snakeHead->x - 1;
+    secondNode->y = snakeHead->y;
+    secondNode->next = snakeHead;
+    snakeHead = secondNode;
+
+    // 第三个节点（蛇身）
+    SnakeNode *thirdNode = (SnakeNode*)malloc(sizeof(SnakeNode));
+    thirdNode->x = snakeHead->x - 1;
+    thirdNode->y = snakeHead->y;
+    thirdNode->next = snakeHead;
+    snakeHead = thirdNode;
+}
+
+// 生成食物：随机坐标，不与蛇身重叠
+void generateFood() {
+    srand((unsigned int)time(NULL));  // 随机种子
+    int isValid = 0;
+    while (!isValid) {
+        foodX = rand() % (MAP_WIDTH - 2) + 1;  // 避开边界
+        foodY = rand() % (MAP_HEIGHT - 2) + 1;
+        // 检查食物是否与蛇身重叠
+        SnakeNode *tempNode = snakeHead;
+        isValid = 1;
+        while (tempNode != NULL) {
+            if (tempNode->x == foodX && tempNode->y == foodY) {
+                isValid = 0;
+                break;
+            }
+            tempNode = tempNode->next;
+        }
+    }
+}
+
+// 绘制游戏地图：边界+蛇身+食物
+void drawGameMap() {
+    // 绘制上边界
+    for (int i = 0; i < MAP_WIDTH; i++) printf("#");
+    printf("\n");
+
+    // 绘制中间区域（边界+蛇身+食物）
+    for (int y = 1; y < MAP_HEIGHT - 1; y++) {
+        for (int x = 0; x < MAP_WIDTH; x++) {
+            if (x == 0 || x == MAP_WIDTH - 1) {
+                printf("#");  // 左右边界
+            } else {
+                // 检查当前位置是否为蛇身
+                int isSnakeBody = 0;
+                SnakeNode *tempNode = snakeHead;
+                while (tempNode != NULL) {
+                    if (tempNode->x == x && tempNode->y == y) {
+                        printf("*");
+                        isSnakeBody = 1;
+                        break;
+                    }
+                    tempNode = tempNode->next;
+                }
+                if (isSnakeBody) continue;
+                // 检查当前位置是否为食物
+                if (x == foodX && y == foodY) {
+                    printf("@");
+                } else {
+                    printf(" ");
+                }
+            }
+        }
+        printf("\n");
+    }
+
+    // 绘制下边界
+    for (int i = 0; i < MAP_WIDTH; i++) printf("#");
+    printf("\n");
+}
+
+// 处理用户输入：WASD控制方向（防止反向移动）
+void handleUserInput() {
+    char inputKey;
+    read(STDIN_FILENO, &inputKey, 1);  // 读取键盘输入
+    switch (inputKey) {
+        case 'w': case 'W':
+            if (direction != DIR_DOWN) direction = DIR_UP;
+            break;
+        case 's': case 'S':
+            if (direction != DIR_UP) direction = DIR_DOWN;
+            break;
+        case 'a': case 'A':
+            if (direction != DIR_RIGHT) direction = DIR_LEFT;
+            break;
+        case 'd': case 'D':
+            if (direction != DIR_LEFT) direction = DIR_RIGHT;
+            break;
+        default:
+            break;
+    }
+}
+
+// 碰撞检测：撞墙或撞自身返回1（游戏结束）
+int checkCollision() {
+    // 检测撞墙
+    if (snakeHead->x <= 0 || snakeHead->x >= MAP_WIDTH - 1 ||
+        snakeHead->y <= 0 || snakeHead->y >= MAP_HEIGHT - 1) {
+        return 1;
+    }
+    // 检测撞自身
+    SnakeNode *tempNode = snakeHead->next;
+    while (tempNode != NULL) {
+        if (snakeHead->x == tempNode->x && snakeHead->y == tempNode->y) {
+            return 1;
+        }
+        tempNode = tempNode->next;
+    }
+    return 0;
+}
+
+// 移动蛇身：新增头节点，吃食物则不删除尾节点
+void moveSnake() {
+    // 新增蛇头节点
+    SnakeNode *newSnakeHead = (SnakeNode*)malloc(sizeof(SnakeNode));
+    newSnakeHead->next = snakeHead;
+    // 根据方向更新新蛇头坐标
+    switch (direction) {
+        case DIR_UP:
+            newSnakeHead->x = snakeHead->x;
+            newSnakeHead->y = snakeHead->y - 1;
+            break;
+        case DIR_DOWN:
+            newSnakeHead->x = snakeHead->x;
+            newSnakeHead->y = snakeHead->y + 1;
+            break;
+        case DIR_LEFT:
+            newSnakeHead->x = snakeHead->x - 1;
+            newSnakeHead->y = snakeHead->y;
+            break;
+        case DIR_RIGHT:
+            newSnakeHead->x = snakeHead->x + 1;
+            newSnakeHead->y = snakeHead->y;
+            break;
+    }
+    snakeHead = newSnakeHead;  // 更新蛇头指针
+
+    // 若吃到食物则不删除尾节点，否则删除尾节点（蛇身长度不变）
+    if (snakeHead->x == foodX && snakeHead->y == foodY) {
+        generateFood();  // 重新生成食物
+    } else {
+        // 找到尾节点的前一个节点
+        SnakeNode *tempNode = snakeHead;
+        while (tempNode->next->next != NULL) {
+            tempNode = tempNode->next;
+        }
+        free(tempNode->next);  // 释放尾节点
+        tempNode->next = NULL; // 断开链表
+    }
+}
+
+// 释放蛇身动态内存
+void freeSnakeMemory() {
+    SnakeNode *tempNode;
+    while (snakeHead != NULL) {
+        tempNode = snakeHead;
+        snakeHead = snakeHead->next;
+        free(tempNode);
+    }
+}
